@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from src.db.init_db import init_db
 from src.routes.auth import router as auth_router
 
-app = FastAPI(title="Auth API", version="2.0.0")
+app = FastAPI(title="imoGo API", version="2.0.0")
 
 
 @app.on_event("startup")

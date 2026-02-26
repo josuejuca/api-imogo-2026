@@ -13,3 +13,40 @@ class RegisterRequest(BaseModel):
 class RegisterResponse(BaseModel):   
     public_id: str
     message: str
+
+class SocialAuthRequest(BaseModel):
+    provider: str = Field(min_length=2, max_length=50)
+    type: str = Field(min_length=2, max_length=50)
+    provider_id: str = Field(min_length=1, max_length=255)
+    email: EmailStr
+    device: int
+    photo_url: str | None = Field(default=None, max_length=255)
+    name: str = Field(min_length=2, max_length=120)
+
+class SocialAuthResponse(BaseModel):
+    token: str
+    key: str
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=6, max_length=128)
+
+
+class LoginResponse(BaseModel):
+    token: str
+    key: str
+
+
+class RenewResponse(BaseModel):
+    token: str
+
+
+class MeResponse(BaseModel):
+    photo: str
+    phone: str
+    email: EmailStr
+    name: str
+    status: int
+    public_id: str
+    profile: int

@@ -25,3 +25,14 @@ class User(Base):
     public_id: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
     device: Mapped[int] = mapped_column(Integer, nullable=False)
     api_key: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+
+class ExternalID(Base):
+    __tablename__ = "external_id"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    provider: Mapped[str] = mapped_column(String(50), nullable=False)
+    type: Mapped[str] = mapped_column(String(50), nullable=False)
+    provider_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    create_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    device: Mapped[int] = mapped_column(Integer, nullable=True)
