@@ -2,13 +2,18 @@ from datetime import datetime
 import secrets
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
+import requests
 from sqlalchemy.orm import Session
 
 from src.core.config import settings
-from src.core.security import create_jwt, decode_jwt, generate_api_key, hash_password, verify_password
+from src.core.security import create_jwt, generate_api_key, hash_password, verify_password
 from src.db.session import get_db
 from src.models import ExternalID, User
 from src.schemas import (
+    ForgotPasswordRequest,
+    ForgotPasswordResponse,
+    UpdateFieldRequest,
+    UpdateFieldResponse,
     LoginRequest,
     LoginResponse,
     MeResponse,
@@ -26,6 +31,8 @@ VALID_DEVICES = {10, 20}
 API_KEY_MAX_ATTEMPTS = 10
 DEFAULT_SOCIAL_ORIGIN = 90
 SOCIAL_PHONE_MAX_ATTEMPTS = 10
+SMTP_URL = "https://smtp.josuejuca.com/imogoSenha"
+TEMP_PASSWORD_BYTES = 5
 
 
 def build_public_id(device: int, user_id: int) -> str:
@@ -60,6 +67,17 @@ def get_user_from_api_key(db: Session, api_key: str | None) -> User:
         raise HTTPException(status_code=403, detail="invalid api key")
 
     return user
+
+
+def send_temporary_password(name: str, email: str, temp_password: str) -> None:
+    payload = {"nome": name, "email": email, "senha": temp_password}
+    try:
+        response = requests.post(SMTP_URL, json=payload, timeout=10)
+    except requests.RequestException as exc:
+        raise HTTPException(status_code=502, detail="smtp request failed") from exc
+
+    if response.status_code >= 400:
+        raise HTTPException(status_code=502, detail="smtp request failed")
 
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> RegisterResponse:
@@ -234,3 +252,46 @@ def me(
         public_id=user.public_id,
         profile=user.profile,
     )
+
+
+@router.post("/forgot-password", response_model=ForgotPasswordResponse, status_code=status.HTTP_200_OK)
+def forgot_password(
+    payload: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+) -> ForgotPasswordResponse:
+    user = db.query(User).filter(User.email == payload.email.lower()).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="email not found")
+
+    temp_password = secrets.token_urlsafe(TEMP_PASSWORD_BYTES)
+    user.password = hash_password(temp_password)
+    db.commit()
+
+    send_temporary_password(user.name, user.email, temp_password)
+
+    return ForgotPasswordResponse(message="temporary password sent")
+
+
+@router.post("/update", response_model=UpdateFieldResponse, status_code=status.HTTP_200_OK)
+def update_field(
+    payload: UpdateFieldRequest,
+    db: Session = Depends(get_db),
+    api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> UpdateFieldResponse:
+    user = get_user_from_api_key(db, api_key)
+    field = payload.campo.strip().lower()
+    value = payload.value.strip()
+
+    if field not in {"nome", "telefone"}:
+        raise HTTPException(status_code=400, detail="campo must be 'nome' or 'telefone'")
+
+    if field == "nome":
+        user.name = value
+    else:
+        exists = db.query(User.id).filter(User.phone == value, User.id != user.id).first()
+        if exists:
+            raise HTTPException(status_code=409, detail="phone already registered")
+        user.phone = value
+
+    db.commit()
+    return UpdateFieldResponse(message="updated")

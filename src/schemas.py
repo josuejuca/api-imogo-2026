@@ -50,3 +50,20 @@ class MeResponse(BaseModel):
     status: int
     public_id: str
     profile: int
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ForgotPasswordResponse(BaseModel):
+    message: str
+
+
+class UpdateFieldRequest(BaseModel):
+    campo: str = Field(min_length=3, max_length=20)
+    value: str = Field(min_length=1, max_length=120)
+
+
+class UpdateFieldResponse(BaseModel):
+    message: str
