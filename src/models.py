@@ -36,3 +36,20 @@ class ExternalID(Base):
     provider_id: Mapped[str] = mapped_column(String(255), nullable=False)
     create_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     device: Mapped[int] = mapped_column(Integer, nullable=True)
+
+class ServiceSimulation(Base):
+    __tablename__ = "service_simulation"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    nome: Mapped[str] = mapped_column(String(120), nullable=False)
+    data_nascimento: Mapped[str] = mapped_column(String(20), nullable=False)
+    telefone: Mapped[str] = mapped_column(String(30), nullable=False)
+    email: Mapped[str] = mapped_column(String(191), nullable=False)
+    valor_imovel: Mapped[str] = mapped_column(String(30), nullable=False)
+    valor_afinanciar: Mapped[str] = mapped_column(String(30), nullable=False)
+    valor_renda_bruta: Mapped[str] = mapped_column(String(30), nullable=False)
+    valor_renda_liquida: Mapped[str] = mapped_column(String(30), nullable=False)
+    valor_fgts: Mapped[str] = mapped_column(String(30), nullable=False)
+    qtd_parcelas: Mapped[int] = mapped_column(Integer, nullable=False)
+    link_simulacao: Mapped[str] = mapped_column(String(255), nullable=False)
+    create_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)

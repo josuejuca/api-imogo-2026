@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.db.init_db import init_db
 from src.routes.auth import router as auth_router
+from src.routes.quadracred import router as quadracred_router
 
 app = FastAPI(title="imoGo API", version="2.0.0", description="imoGo App", swagger_ui_parameters={"syntaxHighlight": {"theme": "obsidian"}}, redoc_url=None, docs_url="/api/docs", openapi_url="/api/openapi.json")
 
@@ -21,6 +22,7 @@ def on_startup() -> None:
 
 
 app.include_router(auth_router, prefix="/api/v2/auth", tags=["auth"])
+app.include_router(quadracred_router, prefix="/api/v2/quadracred", tags=["quadracred"])
 
 
 @app.get("/health")

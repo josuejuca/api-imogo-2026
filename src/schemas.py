@@ -67,3 +67,21 @@ class UpdateFieldRequest(BaseModel):
 
 class UpdateFieldResponse(BaseModel):
     message: str
+
+
+class SimulationData(BaseModel):
+    nome: str = Field(min_length=2, max_length=120)
+    data_nascimento: str = Field(min_length=8, max_length=20)
+    telefone: str = Field(min_length=8, max_length=30)
+    email: EmailStr
+    valor_imovel: str = Field(min_length=1, max_length=30)
+    valor_afinanciar: str = Field(min_length=1, max_length=30)
+    valor_renda_bruta: str = Field(min_length=1, max_length=30)
+    valor_renda_liquida: str = Field(min_length=1, max_length=30)
+    valor_fgts: str = Field(min_length=1, max_length=30)
+    qtd_parcelas: int = Field(ge=1, le=1000)
+
+
+class SimulationResponse(BaseModel):
+    imprimir_link: str
+    email_status: str
